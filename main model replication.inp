@@ -1,0 +1,63 @@
+Title: 
+Replicate main analysis
+
+Data:
+  File is mplus_data.dat ;
+Variable:
+  Names are 
+     weight_form_w16 srh male edu income party age race married insured
+     polar_frust_miss polar_ang_miss polar_afr_miss rally_missing campaign_missing
+     member_missing contact_missing donate_missing display_missing online_missing
+     highschool some_college college age1 age2 age3 black hispanic other_race;
+     
+  Missing are all (-9999) ; 
+  
+  Weight is weight_form_w16;
+  
+  Usevariables are srh male income married polar_frust_miss polar_ang_miss polar_afr_miss 
+  rally_missing campaign_missing member_missing contact_missing donate_missing
+  display_missing online_missing highschool some_college college 
+  age1 age2 age3 black hispanic other_race insured;
+  
+  Categorical are polar_frust_miss polar_ang_miss
+  polar_afr_miss rally_missing campaign_missing member_missing
+  contact_missing donate_missing display_missing online_missing ;
+  
+Analysis: 
+  Estimator = wlsmv;
+  Parameterization = theta;
+  
+Model:
+  !Define polarization/partisan emotive response variable
+  polar BY polar_afr_miss polar_ang_miss polar_frust_miss  ;
+  
+  !Define health variable, fixing residual variance of observed indicator
+  health by srh@1;
+  srh @ .4925;
+
+  !Define political engagement variable
+  eng BY campaign_missing display_missing donate_missing online_missing
+   rally_missing contact_missing  member_missing;
+   
+  !Regression equations
+  eng ON polar male income highschool some_college college married
+  age1 age2 age3 black hispanic other_race ;
+  
+  health ON polar eng male income highschool some_college college married
+  age1 age2 age3 black hispanic other_race insured;
+  
+  !Add covariances between indicators
+  polar_ang_miss WITH polar_frust_miss;
+  
+  campaign_missing WITH display_missing donate_missing online_missing rally_missing;
+  display_missing WITH donate_missing online_missing rally_missing;
+  donate_missing WITH online_missing rally_missing;
+  online_missing WITH rally_missing;
+  
+  
+  Model indirect:
+  health ind polar;
+
+  Output:
+  stdyx;
+  stdy;
